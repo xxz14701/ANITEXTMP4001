@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多行動態文字加背景</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #e8f0fe;
+            --text-color: #202124;
+            --background-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --border-color: #dadce0;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', 'Arial', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px var(--shadow-light);
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            color: #5f6368;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="text"], input[type="file"], input[type="color"], input[type="number"] {
+            font-family: inherit;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="file"]:focus, input[type="color"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+        }
+        
+        input[type="text"] {
+            font-size: 1.2rem;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .row label {
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+        
+        #multi-color-pickers-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .big-btn {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary-color);
+            color: var(--container-bg);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .big-btn:hover {
+            background: #1565c0;
+        }
+
+        .big-btn:active {
+            transform: scale(0.98);
+        }
+
+        .download-row {
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .color-picker::-webkit-color-swatch {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .color-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .font-size-slider {
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+
+        .font-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--container-bg);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+        .animation-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .anim-btn {
+            font-size: 0.9rem;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .anim-btn:hover {
+            background: #d2e3fc;
+        }
+
+        .anim-btn.selected {
+            background: var(--primary-color);
+            color: var(--container-bg);
+            border-color: var(--primary-color);
+        }
+
+        .preview-area {
+            min-height: 200px;
+            background: #f0f4f8;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            border: 2px dashed var(--border-color);
+            position: relative;
+        }
+
+        .remove-stroke-layer {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #d32f2f;
+            background: #ffebee;
+            color: #d32f2f;
+            cursor: pointer;
+        }
+
+        .remove-stroke-layer:hover {
+            background: #ef9a9a;
+            color: #ffffff;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>多行動態文字加背景</h1>
+        <label for="text-input">請輸入文字：</label>
+        <textarea id="text-input" placeholder="請輸入多行文字...&#10;可以換行&#10;支援動畫效果" rows="4" style="font-size:1.5rem; padding:12px; width:100%; border-radius:8px; border:1px solid #bbb; margin-bottom:24px; resize:vertical; font-family:Arial,sans-serif; line-height:1.4;"></textarea>
+
+        <div class="row">
+            <label for="letter-spacing">文字間距 (px):</label>
+            <input type="range" id="letter-spacing" min="0" max="20" value="0" step="0.5" class="font-size-slider">
+            <span id="letter-spacing-value">0px</span>
+        </div>
+
+        <div class="row">
+            <label for="line-height">行高:</label>
+            <input type="range" id="line-height" min="1" max="3" value="1.5" step="0.1" class="font-size-slider">
+            <span id="line-height-value">1.5</span>
+        </div>
+
+        <div class="row">
+            <label for="font-upload">上傳字型：</label>
+            <input type="file" id="font-upload" accept=".ttf,.otf">
+        </div>
+
+        <div class="row">
+            <label for="bg-upload">背景圖片：</label>
+            <input type="file" id="bg-upload" accept="image/*">
+            <button type="button" id="remove-bg" class="big-btn" style="font-size:1rem; padding:6px 16px;">移除背景</button>
+        </div>
+
+        <div class="row">
+            <label for="font-size">字體大小：</label>
+            <input type="range" id="font-size" min="24" max="120" value="48" class="font-size-slider">
+            <span id="font-size-value">48</span> px
+        </div>
+
+        <div class="row">
+            <label>色彩模式：</label>
+            <label><input type="radio" name="color-mode" value="single" checked> 單色</label>
+            <label><input type="radio" name="color-mode" value="multi"> 多色</label>
+        </div>
+        <div class="row" id="color-picker-row">
+            <label for="color-picker">文字顏色：</label>
+            <input type="color" id="color-picker" class="color-picker" value="#1a73e8">
+        </div>
+        <div class="row" id="multi-color-pickers-row" style="display:none;"></div>
+
+        <div class="row" id="stroke-layers-row" style="flex-direction:column; align-items:stretch;">
+            <label>多層外框設定：</label>
+            <div id="stroke-layers-list"></div>
+            <button type="button" id="add-stroke-layer" class="big-btn" style="font-size:1rem; padding:6px 16px; margin-top:8px;">新增一層外框</button>
+        </div>
+
+        <div>
+            <label>動畫效果：</label>
+            <div class="animation-options">
+                <button class="anim-btn selected" data-anim="none">無</button>
+                <button class="anim-btn" data-anim="scale">放大縮小</button>
+                <button class="anim-btn" data-anim="blink">閃爍</button>
+                <button class="anim-btn" data-anim="rotate">旋轉</button>
+                <button class="anim-btn" data-anim="bounce">上下跳動</button>
+                <button class="anim-btn" data-anim="shake">左右搖擺</button>
+                <button class="anim-btn" data-anim="rainbow">彩虹閃爍</button>
+                <button class="anim-btn" data-anim="wave">波浪</button>
+                <button class="anim-btn" data-anim="jump">彈跳</button>
+                <button class="anim-btn" data-anim="fade">漸淡入出</button>
+                <button class="anim-btn" data-anim="slide">左右滑動</button>
+                <button class="anim-btn" data-anim="scale-rotate">縮放+旋轉</button>
+                <button class="anim-btn" data-anim="breath">呼吸</button>
+                <button class="anim-btn" data-anim="shake-random">抖動</button>
+                <button class="anim-btn" data-anim="jump-wave">彈跳+波浪</button>
+                <button class="anim-btn" data-anim="typewriter">打字機</button>
+                <button class="anim-btn" data-anim="scale-blink">縮放閃爍</button>
+                <button class="anim-btn" data-anim="flipY">上下翻轉</button>
+                <button class="anim-btn" data-anim="flipX">左右翻轉</button>
+                <button class="anim-btn" data-anim="spring">彈簧</button>
+                <button class="anim-btn" data-anim="ripple">波紋擴散</button>
+                <button class="anim-btn" data-anim="color-flow">顏色流動</button>
+                <button class="anim-btn" data-anim="lightning">閃電</button>
+                <button class="anim-btn" data-anim="blur-blink">模糊閃爍</button>
+                <button class="anim-btn" data-anim="split">文字分裂</button>
+                <button class="anim-btn" data-anim="implode">文字繞圈</button>
+                <button class="anim-btn" data-anim="drop">文字掉落</button>
+                <button class="anim-btn" data-anim="stretch">文字拉伸</button>
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="preview-canvas" width="270" height="270" style="background:transparent;"></canvas>
+            <div id="text-controls" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px;">
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.9rem;">位置 X: <input type="range" id="pos-x" min="0" max="270" value="135" style="width: 100px;"></label>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.9rem;">位置 Y: <input type="range" id="pos-y" min="0" max="270" value="135" style="width:100px;"></label>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.9rem;">大小: <input type="range" id="scale" min="0.1" max="3" value="1" step="0.1" style="width: 100px;"></label>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.9rem;">旋轉: <input type="range" id="rotation" min="0" max="360" value="0" style="width: 100px;"></label>
+                </div>
+                <button type="button" id="reset-transform" class="big-btn" style="font-size:0.9rem; padding:4px 12px;">重置</button>
+            </div>
+        </div>
+
+        <div class="download-row row">
+            <button class="big-btn" id="download-png">PNG</button>
+            <button class="big-btn" id="download-gif">GIF</button>
+            <button class="big-btn" id="download-mp4">MP4</button>
+            <button class="big-btn" id="download-webm">WebM</button>
+        </div>
+        
+        <div id="local-file-warning" style="display: none; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 16px; margin-top: 24px;">
+            <p style="margin: 0 0 12px 0; color: #856404; font-weight: bold;">⚠️ 本地文件模式</p>
+            <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                檢測到直接打開HTML。建議使用本地伺服器：<code style="background: #f8f9fa; padding: 2px 6px;">python -m http.server 8000</code>
+            </p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
