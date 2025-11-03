@@ -536,6 +536,7 @@ document.getElementById('download-gif').addEventListener('click', function() {
     }, 100);
 });
 
+// --- 程式碼修正開始 ---
 async function recordVideo(format) {
     if(animFrame) cancelAnimationFrame(animFrame);
     const frames = 60, fps = 30;
@@ -544,18 +545,41 @@ async function recordVideo(format) {
     videoCanvas.height = previewCanvas.height;
     const videoCtx = videoCanvas.getContext('2d');
     const stream = videoCanvas.captureStream(fps);
+    
+    // 修正：MimeType 和檔案格式
+    let mimeType;
+    let fileExtension;
+
+    if (format === 'mp4') {
+        if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
+            mimeType = 'video/mp4;codecs=avc1';
+            fileExtension = 'mp4';
+        } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+            mimeType = 'video/mp4';
+            fileExtension = 'mp4';
+        } else {
+            // 如果瀏覽器不支援 MP4，則彈出提示並改用 WebM
+            alert("您的瀏覽器不支援 MP4 錄製，將自動轉為 WebM 格式。");
+            mimeType = 'video/webm;codecs=vp9';
+            fileExtension = 'webm';
+        }
+    } else {
+        mimeType = 'video/webm;codecs=vp9';
+        fileExtension = 'webm';
+    }
+    
     const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9',
+        mimeType: mimeType,
         videoBitsPerSecond: 2500000
     });
     
     const chunks = [];
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
+        const blob = new Blob(chunks, { type: mimeType.split(';')[0] }); // 使用基礎 type
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = `text.${format}`;
+        link.download = `text.${fileExtension}`; // 使用修正的副檔名
         link.href = url;
         link.click();
         updatePreview();
@@ -563,22 +587,22 @@ async function recordVideo(format) {
     
     mediaRecorder.start();
     for(let i = 0; i < frames; i++) {
-        animTick = i * 2;
+        animTick = i * 2; // 這行在目前的邏輯中是多餘的，但無害
+        
+        // 修正：繪圖邏輯
+        // 1. 使用 drawPreview 在主畫布 (previewCanvas) 上繪製
+        //    (包含背景和文字)
+        drawPreview(i / frames); 
+        
+        // 2. 將主畫布的完整內容複製到 videoCanvas
         videoCtx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
-        if (backgroundImageLoaded && backgroundImage) {
-            videoCtx.save();
-            videoCtx.globalAlpha = 0.8;
-            videoCtx.drawImage(backgroundImage, 0, 0, videoCanvas.width, videoCanvas.height);
-            videoCtx.restore();
-        }
-        const originalCtx = window.ctx;
-        window.ctx = videoCtx;
-        drawPreview(i / frames);
-        window.ctx = originalCtx;
+        videoCtx.drawImage(previewCanvas, 0, 0, videoCanvas.width, videoCanvas.height);
+        
         await new Promise(resolve => setTimeout(resolve, 1000 / fps));
     }
     mediaRecorder.stop();
 }
+// --- 程式碼修正結束 ---
 
 document.getElementById('download-mp4').addEventListener('click', () => recordVideo('mp4'));
 document.getElementById('download-webm').addEventListener('click', () => recordVideo('webm'));
@@ -589,3 +613,4 @@ if (window.location.protocol === 'file:') {
 }
 renderStrokeLayers();
 updatePreview();
+// 移除了檔案末尾多餘的 '}'
